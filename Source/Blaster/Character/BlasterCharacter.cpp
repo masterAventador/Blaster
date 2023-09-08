@@ -3,6 +3,7 @@
 
 #include "BlasterCharacter.h"
 
+#include "Blaster/BlasterComponent/CombatComponent.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Camera/CameraComponent.h"
 #include "Components/WidgetComponent.h"
@@ -27,6 +28,9 @@ ABlasterCharacter::ABlasterCharacter()
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>("OverheadWidget");
 	OverheadWidget->SetupAttachment(RootComponent);
+
+	Combat = CreateDefaultSubobject<UCombatComponent>("CombatComponnet");
+	Combat->SetIsReplicated(true);
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const 
@@ -35,6 +39,8 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter,OverlappingWeapon,COND_OwnerOnly);
 }
+
+
 
 void ABlasterCharacter::BeginPlay()
 {
@@ -51,15 +57,23 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&ACharacter::Jump);
+	PlayerInputComponent->BindAction("Equip",IE_Pressed,this,&ThisClass::EquipBUttonPressed);
 	
 	PlayerInputComponent->BindAxis("MoveForward",this,&ThisClass::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight",this,&ThisClass::MoveRight);
 	PlayerInputComponent->BindAxis("Turn",this,&ThisClass::Turn);
 	PlayerInputComponent->BindAxis("LookUp",this,&ThisClass::LookUp);
-
+	
 }
 
-
+void ABlasterCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if (Combat)
+	{
+		Combat->Character = this;
+	}
+}
 
 void ABlasterCharacter::MoveForward(float Value)
 {
@@ -89,6 +103,14 @@ void ABlasterCharacter::Turn(float Value)
 void ABlasterCharacter::LookUp(float Value)
 {
 	AddControllerPitchInput(Value);
+}
+
+void ABlasterCharacter::EquipBUttonPressed()
+{
+	if (Combat && HasAuthority())
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
