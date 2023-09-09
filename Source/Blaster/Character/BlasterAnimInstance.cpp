@@ -4,6 +4,7 @@
 #include "BlasterAnimInstance.h"
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -32,4 +33,13 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
 	bIsCrouch = BlasterCharacter->bIsCrouched;
 	bAiming = BlasterCharacter->IsAiming();
+
+	FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();
+	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());
+	if (!BlasterCharacter->HasAuthority() && !BlasterCharacter->IsLocallyControlled())
+	{
+		UE_LOG(LogTemp,Warning,TEXT("AimRotation Yaw %f:"),AimRotation.Yaw);
+		UE_LOG(LogTemp,Warning,TEXT("MovementRotation Yaw %f:"),MovementRotation.Yaw);
+	}
+	
 }
