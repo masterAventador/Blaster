@@ -21,6 +21,7 @@ AProjectile::AProjectile()
 	
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
+	
 }
 
 void AProjectile::BeginPlay()
